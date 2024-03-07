@@ -1,4 +1,4 @@
-name: Grafana Deploy
+name: Vault Deploy
 
 on:
   push:
@@ -28,14 +28,28 @@ jobs:
     - name: Update kubeconfig
       run: aws eks update-kubeconfig --region us-east-2 --name education-eks-NJoMc7bJ
 
+    - name: Install kubectl and kubens
+      run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+          curl -LO https://raw.githubusercontent.com/ahmetb/kubectx/master/kubens
+          chmod +x kubens
+          sudo mv kubens /usr/local/bin/
+
     - name: Install Helm
       run: |
-        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
-        chmod +x get_helm.sh
-        ./get_helm.sh
-
-    - name: Deploy Helm Chart
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+          chmod +x get_helm.sh
+          sudo ./get_helm.sh
+        
+    - name: Verify kubeconfig    
+      run: kubectl get nodes
+    - name: Create Namespace
+      run: kubectl create ns vault
+    - name: Deploy vault
       run: |
-        helm repo add harbor https://helm.goharbor.io
-        helm uninstall my-harbor
-        helm install my-harbor harbor/harbor --version 1.14.0 -n harbor
+       helm repo add hashicorp https://helm.releases.hashicorp.com
+       helm install my-vault hashicorp/vault --version 0.27.0
+ 
