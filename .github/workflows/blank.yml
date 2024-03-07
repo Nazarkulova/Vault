@@ -46,8 +46,10 @@ jobs:
         
     - name: Verify kubeconfig    
       run: kubectl get nodes
+      
     - name: Create Namespace
       run: kubectl create ns vault
+      
     - name: Deploy vault
       run: |
        helm repo add hashicorp https://helm.releases.hashicorp.com
